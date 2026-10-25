@@ -11,8 +11,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Phone-friendly mode: if the repo only contains a .zip of the project,
-      # unpack it and build from there.
       - name: Locate project
         run: |
           if [ -f CMakeLists.txt ]; then
@@ -31,8 +29,6 @@ jobs:
 
       - name: Configure
         run: |
-          # The newest NDK on the runner (30) breaks the SDK's fmt dependency
-          # ("use of undeclared identifier 'malloc'"), so prefer NDK 28, then 27.
           echo "Installed NDKs:"; ls /usr/local/lib/android/sdk/ndk || true
           NDK=""
           for v in 28 27; do
@@ -54,16 +50,16 @@ jobs:
 
       - name: Package .levipack
         run: |
-          MODID=elytra_swap
+          MODID=auto_firework
           mkdir -p "pkg/$MODID"
           cp "$PROJ/manifest.json" "pkg/$MODID/"
-          cp build/out/libelytra_swap.so "pkg/$MODID/"
-          (cd "pkg/$MODID" && zip -r "../../ElytraSwap.levipack" .)
-          ls -l ElytraSwap.levipack build/out/
+          cp build/out/libauto_firework.so "pkg/$MODID/"
+          (cd "pkg/$MODID" && zip -r "../../AutoFirework.levipack" .)
+          ls -l AutoFirework.levipack build/out/
 
       - uses: actions/upload-artifact@v4
         with:
-          name: ElytraSwap
+          name: AutoFirework
           path: |
-            ElytraSwap.levipack
-            build/out/libelytra_swap.so
+            AutoFirework.levipack
+            build/out/libauto_firework.so
