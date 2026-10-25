@@ -50,16 +50,16 @@ jobs:
 
       - name: Package .levipack
         run: |
-          MODID=auto_firework
+          MODID=auto_attack
           mkdir -p "pkg/$MODID"
           cp "$PROJ/manifest.json" "pkg/$MODID/"
-          cp build/out/libauto_firework.so "pkg/$MODID/"
-          (cd "pkg/$MODID" && zip -r "../../AutoFirework.levipack" .)
-          ls -l AutoFirework.levipack build/out/
+          cp build/out/libauto_attack.so "pkg/$MODID/"
+          (cd "pkg/$MODID" && zip -r "../../AutoAttack.levipack" .)
+          ls -l AutoAttack.levipack build/out/
 
       - uses: actions/upload-artifact@v4
         with:
-          name: AutoFirework
+          name: AutoAttack
           path: |
-            AutoFirework.levipack
-            build/out/libauto_firework.so
+            AutoAttack.levipack
+            build/out/libauto_attack.so
