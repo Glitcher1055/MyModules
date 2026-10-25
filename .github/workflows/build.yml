@@ -50,16 +50,16 @@ jobs:
 
       - name: Package .levipack
         run: |
-          MODID=auto_attack
+          MODID=elytra_swap
           mkdir -p "pkg/$MODID"
           cp "$PROJ/manifest.json" "pkg/$MODID/"
           cp build/out/libauto_attack.so "pkg/$MODID/"
-          (cd "pkg/$MODID" && zip -r "../../AutoAttack.levipack" .)
-          ls -l AutoAttack.levipack build/out/
+          (cd "pkg/$MODID" && zip -r "../../ElytraSwap.levipack" .)
+          ls -l ElytraSwap.levipack build/out/
 
       - uses: actions/upload-artifact@v4
         with:
-          name: AutoAttack
+          name: ElytraSwap
           path: |
-            AutoAttack.levipack
+            ElytraSwap.levipack
             build/out/libauto_attack.so
