@@ -1,65 +1,27 @@
-name: build-levipack
-
+name: Build APK
 on:
   push:
-    branches: [main, master]
   workflow_dispatch:
-
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - name: Locate project
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: 8.9
+      - name: Unpack project
         run: |
-          if [ -f CMakeLists.txt ]; then
-            echo "PROJ=." >> "$GITHUB_ENV"
-          else
-            zipfile=$(ls -1 *.zip | head -n1)
-            echo "Using $zipfile"
-            mkdir -p _proj
-            unzip -q "$zipfile" -d _proj
-            cm=$(find _proj -name CMakeLists.txt | head -n1)
-            echo "PROJ=$(dirname "$cm")" >> "$GITHUB_ENV"
-          fi
-
-      - name: Install ninja
-        run: sudo apt-get update && sudo apt-get install -y ninja-build
-
-      - name: Configure
-        run: |
-          echo "Installed NDKs:"; ls /usr/local/lib/android/sdk/ndk || true
-          NDK=""
-          for v in 28 27; do
-            cand=$(ls -d /usr/local/lib/android/sdk/ndk/$v.* 2>/dev/null | sort -V | tail -n1)
-            if [ -n "$cand" ]; then NDK="$cand"; break; fi
-          done
-          if [ -z "$NDK" ]; then NDK="${ANDROID_NDK_HOME:-$ANDROID_NDK_LATEST_HOME}"; fi
-          echo "Using NDK: $NDK"
-          cmake -S "$PROJ" -B build -G Ninja \
-            -DCMAKE_BUILD_TYPE=Release \
-            -DCMAKE_TOOLCHAIN_FILE="$NDK/build/cmake/android.toolchain.cmake" \
-            -DANDROID_ABI=arm64-v8a \
-            -DANDROID_PLATFORM=android-28 \
-            -DCMAKE_CXX_FLAGS="-include cstdlib" \
-            -DCMAKE_SHARED_LINKER_FLAGS="-llog"
-
+          unzip -q -o GlitchLauncher.zip -d project
+          echo "PROJECT_DIR=$(dirname "$(find project -name settings.gradle.kts | head -n 1)")" >> $GITHUB_ENV
       - name: Build
-        run: cmake --build build --parallel
-
-      - name: Package .levipack
-        run: |
-          MODID=elytra_swap
-          mkdir -p "pkg/$MODID"
-          cp "$PROJ/manifest.json" "pkg/$MODID/"
-          cp build/out/libauto_attack.so "pkg/$MODID/"
-          (cd "pkg/$MODID" && zip -r "../../ElytraSwap.levipack" .)
-          ls -l ElytraSwap.levipack build/out/
-
+        working-directory: ${{ env.PROJECT_DIR }}
+        run: gradle assembleDebug
       - uses: actions/upload-artifact@v4
         with:
-          name: ElytraSwap
-          path: |
-            ElytraSwap.levipack
-            build/out/libauto_attack.so
+          name: GlitchLauncher-debug
+          path: ${{ env.PROJECT_DIR }}/app/build/outputs/apk/debug/*.apk
